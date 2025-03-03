@@ -5,20 +5,17 @@ import time
 
 # assuming we have three edge nodes
 EDGE_NODES = [
-    {"host": "192.168.1.101", "port": 8000, "healthy": True},
-    {"host": "192.168.1.102", "port": 8000, "healthy": True},
-    {"host": "192.168.1.103", "port": 8000, "healthy": True},
+    {"host": "192.168.2.210", "port": 8000, "healthy": True},
+    {"host": "192.168.2.211", "port": 8000, "healthy": True},
+    {"host": "192.168.2.212", "port": 8000, "healthy": True},
 ]
 
-HEALTH_CHECK_INTERVAL = 5
 
 # Global variables for round-robin selection
 rr_index = 0
-rr_lock = threading.Lock()
 
 def check_edge_node(node):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(2)
     s.connect((node["host"], node["port"]))
     s.close()
     return True
@@ -29,14 +26,13 @@ def health_check_thread():
         for node in EDGE_NODES:
             node["healthy"] = check_edge_node(node)
             status = "healthy" if node["healthy"] else "unhealthy"
-        time.sleep(HEALTH_CHECK_INTERVAL)
+        time.sleep(5)
 
 def select_edge_node():
     global rr_index
     healthy_nodes = [node for node in EDGE_NODES if node["healthy"]]
-    with rr_lock:
-        node = healthy_nodes[rr_index % len(healthy_nodes)]
-        rr_index = (rr_index + 1) % len(healthy_nodes)
+    node = healthy_nodes[rr_index % len(healthy_nodes)]
+    rr_index = (rr_index + 1) % len(healthy_nodes)
     return node
 
 def forward_to_edge(data):
@@ -52,21 +48,17 @@ def forward_to_edge(data):
 def handle_connection(conn, addr):
     
     data = conn.recv(4096)
-    print(f"Received SCTP data from {addr}: {data}")
     response = forward_to_edge(data)
     if response:
         conn.send(response)
     conn.close()
 
 def sctp_listener():
-    SCTP_HOST = "0.0.0.0"  # Listen on all interfaces
-    SCTP_PORT = 9000
     with sctp.sctpsocket_tcp(socket.AF_INET) as server_sock:
-        server_sock.bind((SCTP_HOST, SCTP_PORT))
+        server_sock.bind(("0.0.0.0", 9000))
         server_sock.listen()
         while True:
             conn, addr = server_sock.accept()
-            print(f"Accepted SCTP connection from {addr}")
             threading.Thread(target=handle_connection, args=(conn, addr), daemon=True).start()
          
 

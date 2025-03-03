@@ -10,8 +10,6 @@ EDGE_NODES = [
     {"host": "192.168.2.212", "port": 8000, "healthy": True},
 ]
 
-
-# Global variables for round-robin selection
 rr_index = 0
 
 def check_edge_node(node):
@@ -46,7 +44,6 @@ def forward_to_edge(data):
 
 
 def handle_connection(conn, addr):
-    
     data = conn.recv(4096)
     response = forward_to_edge(data)
     if response:

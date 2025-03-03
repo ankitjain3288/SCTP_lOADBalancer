@@ -15,3 +15,8 @@ High Avaialability for loadbalancer:
     systemctl enable keepalivd.
 
     Node which hold the VIP will only receive the SCTP packet.
+
+solution 2:
+we can also use open source load balancer such as HAproxy to handle sctp connection and configure it to listen to
+SCTP connection and forward it to edge node in TCP format. we can deploy this HA proxy in EC2 instance and install 
+keepAlived to make it highly available.

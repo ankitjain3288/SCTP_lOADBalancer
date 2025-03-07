@@ -84,7 +84,7 @@ def handle_connection(conn, addr):
 
 def sctp_listener():
     """Listen for SCTP connections and spawn a new thread for each incoming connection."""
-    SCTP_HOST = "0.0.0.0"  # Listen on all interfaces
+    SCTP_HOST = "192.168.1.100" 
     SCTP_PORT = 9000
     with sctp.sctpsocket_tcp(socket.AF_INET) as server_sock:
         server_sock.bind((SCTP_HOST, SCTP_PORT))
